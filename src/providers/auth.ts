@@ -51,6 +51,45 @@ export const authProvider: AuthBindings = {
     }
   },
 
+  // register a new user
+  register: async ({ email, password }) => {
+    try {
+      // call the register mutation
+      const { data } = await dataProvider.custom({
+        url: API_URL,
+        method: "post",
+        headers: {},
+        meta: {
+          variables: { email, password },
+          // pass the credentials to create a new user
+          rawQuery: `
+            mutation Register($email: String!, $password: String!) {
+              register(registerInput: { email: $email, password: $password }) {
+                id
+                email
+              }
+            }
+          `,
+        },
+      });
+
+      return {
+        success: true,
+        redirectTo: "/login",
+      };
+    } catch (e) {
+      const error = e as Error;
+
+      return {
+        success: false,
+        error: {
+          message: "message" in error ? error.message : "Registration failed",
+          name: "name" in error ? error.name : "Invalid credentials",
+        },
+      };
+    }
+  },
+
   // simply remove the accessToken from localStorage for the logout
   logout: async () => {
     localStorage.removeItem("access_token");
